@@ -10,6 +10,4 @@ class Chat {
           Message(sender: contact.name, text: 'Send me a message'),
           Message(sender: contact.name, text: 'I will reply in 5 seconds')
         ];
-
-  
 }

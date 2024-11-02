@@ -1,6 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'conversation_bubbles_method_channel.dart';
+import 'notification_details.dart';
 
 abstract class ConversationBubblesPlatform extends PlatformInterface {
   /// Constructs a ConversationBubblesPlatform.
@@ -8,7 +9,8 @@ abstract class ConversationBubblesPlatform extends PlatformInterface {
 
   static final Object _token = Object();
 
-  static ConversationBubblesPlatform _instance = MethodChannelConversationBubbles();
+  static ConversationBubblesPlatform _instance =
+      MethodChannelConversationBubbles();
 
   /// The default instance of [ConversationBubblesPlatform] to use.
   ///
@@ -23,7 +25,12 @@ abstract class ConversationBubblesPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<String?> getPlatformVersion() {
-    throw UnimplementedError('platformVersion() has not been implemented.');
+  Future<void> showNotification({
+    required int id,
+    required String title,
+    required String body,
+    required NotificationDetails details,
+  }) async {
+    throw UnimplementedError('showNotification() has not been implemented.');
   }
 }
