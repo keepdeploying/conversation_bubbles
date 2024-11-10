@@ -1,14 +1,12 @@
 package com.keepdeploying.conversation_bubbles
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
-import androidx.core.app.NotificationCompat
 import androidx.core.content.getSystemService
-
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -20,21 +18,15 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler {
   private lateinit var channel: MethodChannel
   private lateinit var context: Context
 
-  private val notificationManager: NotificationManager =
-    context.getSystemService() ?: throw IllegalStateException()
-
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
-    Log.d("ConversationBubbles", "onAttachedToEngine")
-    channel = MethodChannel(flutterPluginBinding.binaryMessenger, "com.keepdeploying.conversation_bubbles")
-    Log.d("ConversationBubbles", "channel: $channel")
+    channel =
+      MethodChannel(flutterPluginBinding.binaryMessenger, "com.keepdeploying.conversation_bubbles")
     channel.setMethodCallHandler(this)
     context = flutterPluginBinding.applicationContext
-    Log.d("ConversationBubbles", "context: $context")
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
   override fun onMethodCall(call: MethodCall, result: Result) {
-    Log.d("ConversationBubbles", "onMethodCall: ${call.method}")
     if (call.method == "showNotification") {
       @Suppress("UNCHECKED_CAST")
       showNotification(call.arguments as Map<String, Any>)
@@ -51,9 +43,11 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler {
   @RequiresApi(Build.VERSION_CODES.O)
   fun showNotification(details: Map<String, Any>) {
     val channelId = details["channelId"] as String
+    val notifManager = context.getSystemService<NotificationManager>()
+      ?: throw IllegalStateException("NotificationManager is null")
 
-    if (notificationManager.getNotificationChannel(channelId) == null) {
-      notificationManager.createNotificationChannel(
+    if (notifManager.getNotificationChannel(channelId) == null) {
+      notifManager.createNotificationChannel(
         NotificationChannel(
           channelId,
           details["channelName"] as String,
@@ -66,7 +60,7 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler {
       )
     }
 
-    val builder = NotificationCompat.Builder(context, channelId)
+    val builder = Notification.Builder(context, channelId)
       .setSmallIcon(
         context.resources.getIdentifier(
           details["icon"] as String,
@@ -77,6 +71,6 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler {
       .setContentTitle(details["title"] as String)
       .setContentText(details["body"] as String)
 
-    notificationManager.notify(details["id"] as Int, builder.build())
+    notifManager.notify(details["id"] as Int, builder.build())
   }
 }

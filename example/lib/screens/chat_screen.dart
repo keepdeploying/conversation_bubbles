@@ -1,17 +1,9 @@
 import 'dart:async';
 
-import 'package:conversation_bubbles/conversation_bubbles.dart';
 import 'package:conversation_bubbles_example/models/chat.dart';
 import 'package:conversation_bubbles_example/models/message.dart';
+import 'package:conversation_bubbles_example/services/bubbles_service.dart';
 import 'package:flutter/material.dart';
-
-int _notifId = 0;
-const _notifDetails = NotificationDetails(
-  icon: 'ic_launcher',
-  channelId: 'chat',
-  channelName: 'Chat',
-  channelDescription: 'Chat',
-);
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key, required this.chat});
@@ -23,7 +15,6 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final plugin = ConversationBubbles();
   final ctrl = TextEditingController();
 
   @override
@@ -96,11 +87,9 @@ class _ChatScreenState extends State<ChatScreen> {
                   Timer(const Duration(seconds: 5), () {
                     final reply = widget.chat.contact.reply(text: text);
                     widget.chat.messages.add(reply);
-                    plugin.showNotification(
-                      id: _notifId,
+                    BubblesService.instance.show(
                       title: widget.chat.contact.name,
                       body: reply.text,
-                      details: _notifDetails,
                     );
                     if (mounted) setState(() {});
                   });
