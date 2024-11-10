@@ -12,13 +12,13 @@ class MethodChannelConversationBubbles extends ConversationBubblesPlatform {
       const MethodChannel('com.keepdeploying.conversation_bubbles');
 
   @override
-  Future<void> showNotification({
+  Future<void> show({
     required int id,
     required String title,
     required String body,
     required NotificationDetails details,
   }) async {
-    await methodChannel.invokeMethod<void>('showNotification', {
+    await methodChannel.invokeMethod<void>('show', {
       'id': id,
       'title': title,
       'body': body,

@@ -3,14 +3,14 @@ import 'package:conversation_bubbles/conversation_bubbles.dart';
 int _notifId = 0;
 
 class BubblesService {
-  final _plugin = ConversationBubbles();
+  final _conversationBubblesPlugin = ConversationBubbles();
 
   static final instance = BubblesService._();
 
   BubblesService._();
 
   Future<void> show({required String title, required String body}) async {
-    await _plugin.showNotification(
+    await _conversationBubblesPlugin.show(
       id: _notifId++,
       title: title,
       body: body,

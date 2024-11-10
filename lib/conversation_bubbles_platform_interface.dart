@@ -25,12 +25,12 @@ abstract class ConversationBubblesPlatform extends PlatformInterface {
     _instance = instance;
   }
 
-  Future<void> showNotification({
+  Future<void> show({
     required int id,
     required String title,
     required String body,
     required NotificationDetails details,
   }) async {
-    throw UnimplementedError('showNotification() has not been implemented.');
+    throw UnimplementedError('show() has not been implemented.');
   }
 }

@@ -27,9 +27,9 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler {
 
   @RequiresApi(Build.VERSION_CODES.O)
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "showNotification") {
+    if (call.method == "show") {
       @Suppress("UNCHECKED_CAST")
-      showNotification(call.arguments as Map<String, Any>)
+      show(call.arguments as Map<String, Any>)
       result.success(null)
     } else {
       result.notImplemented()
@@ -41,7 +41,7 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler {
   }
 
   @RequiresApi(Build.VERSION_CODES.O)
-  fun showNotification(details: Map<String, Any>) {
+  fun show(details: Map<String, Any>) {
     val channelId = details["channelId"] as String
     val notifManager = context.getSystemService<NotificationManager>()
       ?: throw IllegalStateException("NotificationManager is null")
