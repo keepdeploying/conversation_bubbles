@@ -1,15 +1,20 @@
 # conversation_bubbles
 
-A new Flutter plugin project.
+[Android Conversation Bubbles](https://developer.android.com/develop/ui/views/notifications/bubbles) 
+are floating contact points of applications. Bubbles are draggable on 
+any part of the screen, can expand into an app's view and can be 
+collapsed backed. They are available in Android 11+ devices.
 
-## Getting Started
+![](./bubbles-demo.gif)
 
-This project is a starting point for a Flutter
-[plug-in package](https://flutter.dev/developing-packages/),
-a specialized package that includes platform-specific implementation code for
-Android and/or iOS.
+Bubbles are tightly coupled with the notification system. You create one
+by adding a bubble metadata to a notification among other conversation
+requirements by android.
 
-For help getting started with Flutter development, view the
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This project is a simple Flutter plugin that allows you to create
+conversation bubbles in your Flutter app. It exposes a `show` method
+that takes necessary notification details alongside the "Person" data
+required for the bubble to be shown.
 
+You should ensure that your app has the necessary notification permissions
+for bubbles to work.
