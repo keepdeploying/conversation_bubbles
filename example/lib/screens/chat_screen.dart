@@ -33,6 +33,13 @@ class _ChatScreenState extends State<ChatScreen> {
             Text(widget.chat.contact.name),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.open_in_new),
+            onPressed: () => BubblesService.instance
+                .show(widget.chat, shouldAutoExpand: true),
+          )
+        ],
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -87,10 +94,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   Timer(const Duration(seconds: 5), () {
                     final reply = widget.chat.contact.reply(text: text);
                     widget.chat.messages.add(reply);
-                    BubblesService.instance.show(
-                      title: widget.chat.contact.name,
-                      body: reply.text,
-                    );
+                    BubblesService.instance.show(widget.chat);
                     if (mounted) setState(() {});
                   });
                 }

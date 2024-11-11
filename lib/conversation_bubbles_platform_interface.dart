@@ -1,7 +1,7 @@
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 import 'conversation_bubbles_method_channel.dart';
-import 'notification_details.dart';
+import 'models.dart';
 
 abstract class ConversationBubblesPlatform extends PlatformInterface {
   /// Constructs a ConversationBubblesPlatform.
@@ -29,7 +29,10 @@ abstract class ConversationBubblesPlatform extends PlatformInterface {
     required int id,
     required String title,
     required String body,
-    required NotificationDetails details,
+    required String appIcon,
+    required NotificationChannel channel,
+    required Person person,
+    bool? isFromUser,
   }) async {
     throw UnimplementedError('show() has not been implemented.');
   }

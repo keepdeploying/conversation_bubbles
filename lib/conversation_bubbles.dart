@@ -1,20 +1,26 @@
 import 'conversation_bubbles_platform_interface.dart';
-import 'notification_details.dart';
+import 'models.dart';
 
-export 'notification_details.dart';
+export 'models.dart';
 
 class ConversationBubbles {
   Future<void> show({
     required int id,
     required String title,
     required String body,
-    required NotificationDetails details,
+    required String appIcon,
+    required NotificationChannel channel,
+    required Person person,
+    bool? isFromUser,
   }) {
     return ConversationBubblesPlatform.instance.show(
       id: id,
       title: title,
       body: body,
-      details: details,
+      appIcon: appIcon,
+      channel: channel,
+      person: person,
+      isFromUser: isFromUser,
     );
   }
 }

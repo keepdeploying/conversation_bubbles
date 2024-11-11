@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import 'conversation_bubbles_platform_interface.dart';
-import 'notification_details.dart';
+import 'models.dart';
 
 /// An implementation of [ConversationBubblesPlatform] that uses method channels.
 class MethodChannelConversationBubbles extends ConversationBubblesPlatform {
@@ -16,13 +16,19 @@ class MethodChannelConversationBubbles extends ConversationBubblesPlatform {
     required int id,
     required String title,
     required String body,
-    required NotificationDetails details,
+    required String appIcon,
+    required NotificationChannel channel,
+    required Person person,
+    bool? isFromUser,
   }) async {
     await methodChannel.invokeMethod<void>('show', {
       'id': id,
       'title': title,
       'body': body,
-      ...details.toMap(),
+      'appIcon': appIcon,
+      ...channel.toMap(),
+      ...person.toMap(),
+      'isFromUser': isFromUser ?? false,
     });
   }
 }
