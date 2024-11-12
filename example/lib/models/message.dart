@@ -1,22 +1,32 @@
-import 'dart:math';
+import 'package:isar/isar.dart';
 
+part 'message.g.dart';
+
+@collection
 class Message {
-  static final _r = Random();
+  @Index()
+  final int contactId;
 
-  final String id;
+  Id id = Isar.autoIncrement;
+
+  @Index()
+  final bool isIncoming;
+
+  @Index()
   final String? photo;
-  final String? sender; // null sender means "You"
+
+  @Index()
   final String text;
+
+  @Index()
   final int timestamp;
 
-  Message({this.sender, required this.text, this.photo})
-      : id = _id(),
-        timestamp = _now();
-
-  static String _id() =>
-      String.fromCharCodes(List.generate(10, (i) => _r.nextInt(33) + 89));
+  Message({
+    required this.contactId,
+    this.isIncoming = true,
+    required this.text,
+    this.photo,
+  }) : timestamp = _now();
 
   static int _now() => DateTime.now().millisecondsSinceEpoch ~/ 1000;
-
-  bool get isIncoming => sender != null;
 }

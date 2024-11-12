@@ -25,14 +25,26 @@ abstract class ConversationBubblesPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  Future<String?> getIntentUri() {
+    throw UnimplementedError('getIntentUri() has not been implemented.');
+  }
+
+  void init({required String appIcon}) {
+    throw UnimplementedError('init() has not been implemented.');
+  }
+
+  Future<bool> isInBubble() {
+    throw UnimplementedError('isInBubble() has not been implemented.');
+  }
+
   Future<void> show({
-    required int id,
-    required String title,
+    required int notificationId,
     required String body,
-    required String appIcon,
+    required String contentUri,
     required NotificationChannel channel,
     required Person person,
     bool? isFromUser,
+    bool? shouldMinimize,
   }) async {
     throw UnimplementedError('show() has not been implemented.');
   }

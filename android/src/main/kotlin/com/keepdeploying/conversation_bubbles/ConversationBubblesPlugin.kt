@@ -9,6 +9,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Build
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
@@ -19,6 +20,7 @@ import androidx.core.content.getSystemService
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import androidx.core.net.toUri
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -26,7 +28,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-
 /** ConversationBubblesPlugin */
 class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
   private var activity: Activity? = null
@@ -46,12 +47,21 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
 
   @RequiresApi(Build.VERSION_CODES.O)
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "show") {
-      @Suppress("UNCHECKED_CAST")
-      show(call.arguments as Map<String, Any>)
-      result.success(null)
-    } else {
-      result.notImplemented()
+    when (call.method) {
+      "getIntentUri" -> {
+        result.success(getIntentUri())
+      }
+      "isInBubble" -> {
+        result.success(isInBubble())
+      }
+      "show" -> {
+        @Suppress("UNCHECKED_CAST")
+        show(call.arguments as Map<String, Any>)
+        result.success(null)
+      }
+      else -> {
+        result.notImplemented()
+      }
     }
   }
 
@@ -64,15 +74,27 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
-    TODO("Not yet implemented")
+    activity = null
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    TODO("Not yet implemented")
+    activity = binding.activity
   }
 
   override fun onDetachedFromActivity() {
     activity = null
+  }
+
+  fun getIntentUri(): String? {
+    return activity?.intent?.data?.toString()
+  }
+
+  fun isInBubble(): Boolean {
+    return if (Build.VERSION.SDK_INT >= 31) {
+      activity?.isLaunchedFromBubble ?: false
+    } else {
+      false
+    }
   }
 
   private fun flagUpdateCurrent(mutable: Boolean): Int {
@@ -127,6 +149,7 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
     val icon = IconCompat.createWithAdaptiveBitmap(iconBitmap)
     val person = Person.Builder().setName(personName).setIcon(icon).build()
     val personId = details["personId"] as String
+    val contentUri = (details["contentUri"] as String).toUri()            
 
     // Create a dynamic shortcut for the person
     val shortcut = ShortcutInfoCompat.Builder(context, personId)
@@ -135,7 +158,9 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
       .setShortLabel(personName)
       .setIcon(icon)
       .setLongLived(true)
-      .setIntent(Intent(context, activity!!::class.java).setAction(Intent.ACTION_VIEW))
+      .setIntent(
+        Intent(context, activity!!::class.java).setAction(Intent.ACTION_VIEW).setData(contentUri)
+      )
       .setPerson(person)
       .build()
     ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
@@ -144,7 +169,7 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
       context,
       REQUEST_BUBBLE,
       Intent(context, activity!!::class.java)
-        .setAction(Intent.ACTION_VIEW),
+        .setAction(Intent.ACTION_VIEW).setData(contentUri),
       flagUpdateCurrent(mutable = true)
     )
 
@@ -159,7 +184,6 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
             }
           }.build()
       )
-      .setContentTitle(details["title"] as String)
       .setSmallIcon(
         context.resources.getIdentifier(
           details["appIcon"] as String,
@@ -184,6 +208,10 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
 
     if (isFromUser) builder.setOnlyAlertOnce(true)
 
-    notifManager.notify(details["id"] as Int, builder.build())
+    notifManager.notify(details["notificationId"] as Int, builder.build())
+
+    if (details["shouldMinimize"] as Boolean) {
+      activity!!.moveTaskToBack(true)
+    }
   }
 }

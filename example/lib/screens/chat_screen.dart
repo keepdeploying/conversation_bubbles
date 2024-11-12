@@ -1,76 +1,105 @@
-import 'dart:async';
-
-import 'package:conversation_bubbles_example/models/chat.dart';
+import 'package:conversation_bubbles_example/models/contact.dart';
 import 'package:conversation_bubbles_example/models/message.dart';
 import 'package:conversation_bubbles_example/services/bubbles_service.dart';
+import 'package:conversation_bubbles_example/services/chats_service.dart';
 import 'package:flutter/material.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, required this.chat});
+  final Contact contact;
 
-  final Chat chat;
+  const ChatScreen({super.key, required this.contact});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final ctrl = TextEditingController();
+  final bubbles = BubblesService.instance;
+  final chats = ChatsService.instance;
+  final scrollCtrl = ScrollController();
+  final textCtrl = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
+        leading: bubbles.isInBubble
+            ? null
+            : IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: Navigator.of(context).canPop()
+                    ? Navigator.of(context).pop
+                    : () => Navigator.of(context).pushNamed('/'),
+              ),
         titleSpacing: 0,
         title: Row(
           children: [
+            if (bubbles.isInBubble) const SizedBox(width: 16),
             CircleAvatar(
               radius: 20,
-              backgroundImage:
-                  AssetImage('assets/${widget.chat.contact.name}.jpg'),
+              backgroundImage: AssetImage('assets/${widget.contact.name}.jpg'),
             ),
             const SizedBox(width: 8),
-            Text(widget.chat.contact.name),
+            Text(widget.contact.name),
           ],
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.open_in_new),
-            onPressed: () => BubblesService.instance
-                .show(widget.chat, shouldAutoExpand: true),
-          )
+          if (!bubbles.isInBubble)
+            IconButton(
+              icon: const Icon(Icons.open_in_new),
+              onPressed: () =>
+                  bubbles.show(widget.contact, '', shouldAutoExpand: true),
+            )
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemBuilder: (_, i) => Row(
-          children: [
-            if (!widget.chat.messages[i].isIncoming) const Spacer(),
-            Container(
-              constraints: BoxConstraints(
-                  maxWidth: MediaQuery.sizeOf(context).width * 0.8),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: widget.chat.messages[i].isIncoming
-                      ? Colors.blue.shade200
-                      : Colors.green.shade200),
-              padding: const EdgeInsets.all(8),
-              margin: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(widget.chat.messages[i].text),
-                  if (widget.chat.messages[i].photo != null) ...[
-                    const SizedBox(height: 4),
-                    Image.asset('assets/${widget.chat.messages[i].photo}.jpg',
-                        width: 100)
-                  ]
-                ],
-              ),
+      body: StreamBuilder<List<Message>>(
+        stream: chats.getMessages(widget.contact.id),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            scrollCtrl.jumpTo(scrollCtrl.position.maxScrollExtent);
+          });
+
+          final messages = snapshot.data!;
+          return ListView.builder(
+            controller: scrollCtrl,
+            padding: const EdgeInsets.all(16),
+            itemBuilder: (_, i) => Row(
+              children: [
+                if (!messages[i].isIncoming) const Spacer(),
+                Container(
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.sizeOf(context).width * 0.8),
+                  decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      color: messages[i].isIncoming
+                          ? Colors.blue.shade200
+                          : Colors.green.shade200),
+                  padding: const EdgeInsets.all(8),
+                  margin: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(messages[i].text),
+                      if (messages[i].photo != null) ...[
+                        const SizedBox(height: 4),
+                        Image.asset(
+                          'assets/${messages[i].photo}.jpg',
+                          width: 100,
+                        )
+                      ]
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        itemCount: widget.chat.messages.length,
+            itemCount: messages.length,
+          );
+        },
       ),
       bottomNavigationBar: Container(
         decoration:
@@ -81,22 +110,15 @@ class _ChatScreenState extends State<ChatScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Expanded(
-                child: TextField(controller: ctrl, minLines: 1, maxLines: 3)),
+                child:
+                    TextField(controller: textCtrl, minLines: 1, maxLines: 3)),
             const SizedBox(width: 8),
             InkWell(
-              onTap: () {
-                if (ctrl.text.isNotEmpty) {
-                  final text = ctrl.text;
-                  setState(() {
-                    widget.chat.messages.add(Message(text: ctrl.text));
-                    ctrl.text = '';
-                  });
-                  Timer(const Duration(seconds: 5), () {
-                    final reply = widget.chat.contact.reply(text: text);
-                    widget.chat.messages.add(reply);
-                    BubblesService.instance.show(widget.chat);
-                    if (mounted) setState(() {});
-                  });
+              onTap: () async {
+                if (textCtrl.text.isNotEmpty) {
+                  await chats.send(
+                      contact: widget.contact, text: textCtrl.text);
+                  setState(() => textCtrl.text = '');
                 }
               },
               child: const Icon(Icons.send),

@@ -11,24 +11,47 @@ class MethodChannelConversationBubbles extends ConversationBubblesPlatform {
   final methodChannel =
       const MethodChannel('com.keepdeploying.conversation_bubbles');
 
+  String? _appIcon;
+
+  /// Stores the [appIcon] for use in showing bubbles.
+  @override
+  void init({required String appIcon}) => _appIcon = appIcon;
+
+  @override
+  Future<String?> getIntentUri() {
+    return methodChannel.invokeMethod<String>('getIntentUri');
+  }
+
+  @override
+  Future<bool> isInBubble() async {
+    return (await methodChannel.invokeMethod<bool>('isInBubble')) ?? false;
+  }
+
   @override
   Future<void> show({
-    required int id,
-    required String title,
+    required int notificationId,
     required String body,
-    required String appIcon,
+    required String contentUri,
     required NotificationChannel channel,
     required Person person,
     bool? isFromUser,
+    bool? shouldMinimize,
   }) async {
+    if (_appIcon == null) {
+      throw Exception(
+        'You must call init() before calling show() to set the appIcon.',
+      );
+    }
+
     await methodChannel.invokeMethod<void>('show', {
-      'id': id,
-      'title': title,
+      'notificationId': notificationId,
       'body': body,
-      'appIcon': appIcon,
+      'appIcon': _appIcon,
+      'contentUri': contentUri,
       ...channel.toMap(),
       ...person.toMap(),
       'isFromUser': isFromUser ?? false,
+      'shouldMinimize': shouldMinimize ?? false,
     });
   }
 }
