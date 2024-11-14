@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:conversation_bubbles/conversation_bubbles.dart';
 import 'package:conversation_bubbles_example/models/contact.dart';
 import 'package:conversation_bubbles_example/models/message.dart';
 import 'package:conversation_bubbles_example/services/bubbles_service.dart';
@@ -8,6 +9,7 @@ import 'package:path_provider/path_provider.dart';
 
 class ChatsService {
   late final Isar _db;
+  Contact? _launchContact;
 
   static final instance = ChatsService._();
 
@@ -43,6 +45,8 @@ class ChatsService {
       .watchLazy(fireImmediately: true)
       .asyncMap((_) => _db.contacts.where().findAll());
 
+  Contact? get launchContact => _launchContact;
+
   Future<void> clear() async {
     await _db.writeTxn(_db.clear);
     await _setupContacts();
@@ -59,6 +63,17 @@ class ChatsService {
   }
 
   Future<void> init() async {
+    final intentUri = await ConversationBubbles().getIntentUri();
+    if (intentUri != null) {
+      final uri = Uri.tryParse(intentUri);
+      if (uri != null) {
+        final id = int.tryParse(uri.pathSegments.last);
+        if (id != null) {
+          _launchContact = await ChatsService.instance.getContact(id);
+        }
+      }
+    }
+
     _db = Isar.instanceNames.isEmpty
         ? await Isar.open(
             [ContactSchema, MessageSchema],

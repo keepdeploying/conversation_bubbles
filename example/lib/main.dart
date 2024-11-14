@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await ChatsService.instance.init();
   await BubblesService.instance.init();
+  await ChatsService.instance.init();
 
   runApp(const MyApp());
 }
@@ -20,6 +20,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bubbles = BubblesService.instance;
+    final chats = ChatsService.instance;
 
     return MaterialApp(
       initialRoute: '/',
@@ -27,9 +28,9 @@ class MyApp extends StatelessWidget {
         return [
           if (!bubbles.isInBubble)
             MaterialPageRoute(builder: (_) => const HomeScreen()),
-          if (bubbles.launchContact != null)
+          if (chats.launchContact != null)
             MaterialPageRoute(
-              builder: (_) => ChatScreen(contact: bubbles.launchContact!),
+              builder: (_) => ChatScreen(contact: chats.launchContact!),
             ),
         ];
       },
