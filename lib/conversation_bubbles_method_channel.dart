@@ -12,10 +12,15 @@ class MethodChannelConversationBubbles extends ConversationBubblesPlatform {
       const MethodChannel('com.keepdeploying.conversation_bubbles');
 
   String? _appIcon;
+  String? _fqBubbleActivity;
 
-  /// Stores the [appIcon] for use in showing bubbles.
+  /// Stores the [appIcon] and the fully qualified name of the Android Activity
+  /// for use in showing bubbles.
   @override
-  void init({required String appIcon}) => _appIcon = appIcon;
+  void init({required String appIcon, required String fqBubbleActivity}) {
+    _appIcon = appIcon;
+    _fqBubbleActivity = fqBubbleActivity;
+  }
 
   @override
   Future<String?> getIntentUri() {
@@ -36,22 +41,33 @@ class MethodChannelConversationBubbles extends ConversationBubblesPlatform {
     required Person person,
     bool? isFromUser,
     bool? shouldMinimize,
+    String? appIcon,
+    String? fqBubbleActivity,
   }) async {
-    if (_appIcon == null) {
+    if (appIcon == null && _appIcon == null) {
       throw Exception(
-        'You must call init() before calling show() to set the appIcon.',
+        'You must call init() before calling show() to set the appIcon '
+        ' OR you must provide the appIcon as a parameter to show().',
+      );
+    }
+
+    if (fqBubbleActivity == null && _fqBubbleActivity == null) {
+      throw Exception(
+        'You must call init before calling show to set the fqBubbleActivity '
+        ' OR you must provide the fqBubbleActivity as a parameter to show().',
       );
     }
 
     await methodChannel.invokeMethod<void>('show', {
       'notificationId': notificationId,
       'body': body,
-      'appIcon': _appIcon,
+      'appIcon': appIcon ?? _appIcon,
       'contentUri': contentUri,
       ...channel.toMap(),
       ...person.toMap(),
       'isFromUser': isFromUser ?? false,
       'shouldMinimize': shouldMinimize ?? false,
+      'fqBubbleActivity': fqBubbleActivity ?? _fqBubbleActivity,
     });
   }
 }

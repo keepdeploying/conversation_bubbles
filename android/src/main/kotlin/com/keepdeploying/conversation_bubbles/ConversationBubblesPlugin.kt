@@ -28,6 +28,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+
 /** ConversationBubblesPlugin */
 class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAware {
   private var activity: Activity? = null
@@ -35,7 +36,8 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
   private lateinit var context: Context
 
   companion object {
-    private const val REQUEST_BUBBLE = 1
+    private const val REQUEST_CONTENT = 1
+    private const val REQUEST_BUBBLE = 2
   }
 
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
@@ -149,7 +151,8 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
     val icon = IconCompat.createWithAdaptiveBitmap(iconBitmap)
     val person = Person.Builder().setName(personName).setIcon(icon).build()
     val personId = details["personId"] as String
-    val contentUri = (details["contentUri"] as String).toUri()            
+    val contentUri = (details["contentUri"] as String).toUri()
+    val bubbleActivity = Class.forName(details["fqBubbleActivity"] as String)
 
     // Create a dynamic shortcut for the person
     val shortcut = ShortcutInfoCompat.Builder(context, personId)
@@ -164,19 +167,27 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
       .setPerson(person)
       .build()
     ShortcutManagerCompat.pushDynamicShortcut(context, shortcut)
-
-    val pendingIntent = PendingIntent.getActivity(
+    
+    val bubbleIntent = PendingIntent.getActivity(
       context,
       REQUEST_BUBBLE,
-      Intent(context, activity!!::class.java)
+      Intent(context, bubbleActivity)
         .setAction(Intent.ACTION_VIEW).setData(contentUri),
       flagUpdateCurrent(mutable = true)
+    )
+
+    val contentIntent = PendingIntent.getActivity(
+      context,
+      REQUEST_CONTENT,
+      Intent(context, activity!!::class.java)
+        .setAction(Intent.ACTION_VIEW).setData(contentUri),
+      flagUpdateCurrent(mutable = false)
     )
 
     val isFromUser = details["isFromUser"] as Boolean
     val builder = NotificationCompat.Builder(context, channelId)
       .setBubbleMetadata(
-        NotificationCompat.BubbleMetadata.Builder(pendingIntent, icon)
+        NotificationCompat.BubbleMetadata.Builder(bubbleIntent, icon)
           .setDesiredHeight((getScreenHeight() * 0.75).toInt()).apply {
             if (isFromUser) {
               setAutoExpandBubble(true)
@@ -196,7 +207,7 @@ class ConversationBubblesPlugin : FlutterPlugin, MethodCallHandler, ActivityAwar
       .setLocusId(LocusIdCompat(personId))
       .addPerson(person)
       .setShowWhen(true)
-      .setContentIntent(pendingIntent)
+      .setContentIntent(contentIntent)
       .setStyle(
         NotificationCompat.MessagingStyle(person)
           .addMessage(

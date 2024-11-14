@@ -10,10 +10,7 @@ class BubblesService {
 
   static final instance = BubblesService._();
 
-  BubblesService._() {
-    _conversationBubblesPlugin.init(appIcon: '@mipmap/ic_launcher');
-    _conversationBubblesPlugin.isInBubble().then((val) => _isInBubble = val);
-  }
+  BubblesService._();
 
   bool get isInBubble => _isInBubble;
   Contact? get launchContact => _launchContact;
@@ -23,8 +20,14 @@ class BubblesService {
   }
 
   Future<void> init() async {
-    _conversationBubblesPlugin.init(appIcon: '@mipmap/ic_launcher');
+    _conversationBubblesPlugin.init(
+      appIcon: '@mipmap/ic_launcher',
+      fqBubbleActivity:
+          'com.keepdeploying.conversation_bubbles_example.BubbleActivity',
+    );
 
+    _isInBubble = await _conversationBubblesPlugin.isInBubble();
+    
     final intentUri = await _conversationBubblesPlugin.getIntentUri();
     if (intentUri != null) {
       final uri = Uri.tryParse(intentUri);

@@ -29,7 +29,7 @@ abstract class ConversationBubblesPlatform extends PlatformInterface {
     throw UnimplementedError('getIntentUri() has not been implemented.');
   }
 
-  void init({required String appIcon}) {
+  void init({required String appIcon, required String fqBubbleActivity}) {
     throw UnimplementedError('init() has not been implemented.');
   }
 

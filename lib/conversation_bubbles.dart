@@ -8,8 +8,11 @@ class ConversationBubbles {
     return ConversationBubblesPlatform.instance.getIntentUri();
   }
 
-  void init({required String appIcon}) {
-    return ConversationBubblesPlatform.instance.init(appIcon: appIcon);
+  void init({required String appIcon, required String fqBubbleActivity}) {
+    return ConversationBubblesPlatform.instance.init(
+      appIcon: appIcon,
+      fqBubbleActivity: fqBubbleActivity,
+    );
   }
 
   Future<bool> isInBubble() {
