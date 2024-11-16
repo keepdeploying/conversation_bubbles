@@ -63,6 +63,16 @@ class ChatsService {
   }
 
   Future<void> init() async {
+    _db = Isar.instanceNames.isEmpty
+        ? await Isar.open(
+            [ContactSchema, MessageSchema],
+            directory: (await getApplicationDocumentsDirectory()).path,
+            inspector: true,
+          )
+        : Isar.getInstance()!;
+
+    if (await _db.contacts.count() == 0) await _setupContacts();
+
     final intentUri = await ConversationBubbles().getIntentUri();
     if (intentUri != null) {
       final uri = Uri.tryParse(intentUri);
@@ -73,16 +83,6 @@ class ChatsService {
         }
       }
     }
-
-    _db = Isar.instanceNames.isEmpty
-        ? await Isar.open(
-            [ContactSchema, MessageSchema],
-            directory: (await getApplicationDocumentsDirectory()).path,
-            inspector: true,
-          )
-        : Isar.getInstance()!;
-
-    if (await _db.contacts.count() == 0) await _setupContacts();
   }
 
   Future<void> send({
