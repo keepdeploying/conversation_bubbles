@@ -21,8 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
         StreamBuilder(
           stream: notifService.isGrantedStream,
           builder: (context, snap) {
+            // snap.data is nullable
             if (snap.data != true) {
-              // snap.data is nullable
               return IconButton(
                 icon: const Icon(Icons.notifications_on_outlined),
                 onPressed: notifService.request,
