@@ -27,6 +27,8 @@ class ConversationBubbles {
     required Person person,
     bool? isFromUser,
     bool? shouldMinimize,
+    String? appIcon,
+    String? fqBubbleActivity,
   }) {
     return ConversationBubblesPlatform.instance.show(
       notificationId: notificationId,
@@ -36,6 +38,8 @@ class ConversationBubbles {
       person: person,
       isFromUser: isFromUser,
       shouldMinimize: shouldMinimize,
+      appIcon: appIcon,
+      fqBubbleActivity: fqBubbleActivity,
     );
   }
 }

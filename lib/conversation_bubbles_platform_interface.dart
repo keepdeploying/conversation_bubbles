@@ -45,6 +45,8 @@ abstract class ConversationBubblesPlatform extends PlatformInterface {
     required Person person,
     bool? isFromUser,
     bool? shouldMinimize,
+    String? appIcon,
+    String? fqBubbleActivity,
   }) async {
     throw UnimplementedError('show() has not been implemented.');
   }
